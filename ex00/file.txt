@@ -1,0 +1,7 @@
+date | value
+alee | olla
+yassin | 54
+yassin | 59
+yassin2  y
+yassin3 | 54.5
+yassin4 | 54.0f
