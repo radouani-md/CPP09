@@ -1,7 +1,4 @@
 date | value
-alee | olla
-yassin | 54
-yassin | 59
-yassin2  y
-yassin3 | 54.5
-yassin4 | 54.0f
+2010-01-05 | y
+2009-02-05 | 1.34f
+2009-02-20 | 54
