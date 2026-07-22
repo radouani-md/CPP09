@@ -28,9 +28,23 @@ int    count_space(std::string str)
     return (count);
 }
 
+std::string trim(const std::string& str)
+{
+    size_t start = 0;
+    while (start < str.length() && std::isspace(str[start]))
+        start++;
+
+    size_t end = str.length();
+    while (end > start && std::isspace(str[end - 1]))
+        end--;
+
+    return str.substr(start, end - start);
+}
+
+
 bool    BitcoinExchange::loadFile()
 {
-    std::ifstream file("/home/m/Desktop/CPP09/ex00/cpp_09/data.csv");
+    std::ifstream file("/home/mradouan/Desktop/CPP09/ex00/cpp_09/data.csv");
     if (!file)
         return (std::cout << "Error: could not open file." << std::endl, false);
     std::string line ;
@@ -41,6 +55,8 @@ bool    BitcoinExchange::loadFile()
             size_t pipe = line.find(',');
             std::string key = line.substr(0, pipe);
             std::string value = line.substr(pipe + 1);
+            key = trim(key);
+            value = trim(value);
             bitcoin[key] = parseNumber(value);
         }
     }
@@ -49,13 +65,13 @@ bool    BitcoinExchange::loadFile()
 
 bool countYear(unsigned int day, unsigned int month, unsigned int year)
 {
-    bool isLeapDay = false;
+    bool isLeapYear = false;
     if (year == 0 || year > 2026 || month == 0 || month > 12 || day == 0 || day > 31)
         return (false);
     if ((year % 400 == 0) || (year % 4 == 0 && year % 100 != 0))
-        isLeapDay = true;
+        isLeapYear = true;
     int months[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    if (isLeapDay)
+    if (isLeapYear)
         months[1] = 29;
 
     int monthselcted = month;
@@ -65,20 +81,19 @@ bool countYear(unsigned int day, unsigned int month, unsigned int year)
     return (false);
 }
 
-bool validateInput(std::string key)
+bool validateInput(std::string key, std::string value)
 {
     unsigned int day = 0;
     unsigned int month = 0;
     unsigned int year = 0;
     
     int count = 0;
-    if (key.empty() || count_space(key) > 1)
-        return (false);
+    if (key.empty() || count_space(key) > 1 || value.empty() || count_space(value) > 1)
+        return (std::cout << "Error: bad input => " << key << std::endl, false);
     std::stringstream iss(key);
     std::string tmp;
     while (std::getline(iss, tmp, '-'))
     {
-
         if (count == 0)
             year = atoi(tmp.c_str());
         else if (count == 1 && tmp.length() == 2)
@@ -86,31 +101,39 @@ bool validateInput(std::string key)
         else if (count == 2 && tmp.length() == 3)
             day = atoi(tmp.c_str());
         else
-            return (false);
+            return (std::cout << "Error: bad input => " << key << std::endl, false);
         count++;
     }
     if (count != 3)
-        return (false);
+        return (std::cout << "Error: bad input => " << key << std::endl, false);
     if (!countYear(day, month, year))
-        return (false);
+        return (std::cout << "Error: bad input => " << key << std::endl, false);
     return (true);
 }
 
 
-int validateValue(std::string value, float *val)
+bool validateValue(std::string value, float *val)
 {
-    if (value.empty() || count_space(value) > 1)
-        return (0);
     char *end;
     *val = strtod(value.c_str(), &end);
     if (*end)
-        return (std::cout << "Error: not a valid number" << std::endl, -1);
+        return (std::cout << "Error: not a valid number" << std::endl, false);
     else if (*val < 0)
-        return (std::cout << "Error: not a positive number" << std::endl, -1);
+        return (std::cout << "Error: not a positive number" << std::endl, false);
     else if (*val > 1000)
-        return (std::cout << "Error: too large a number" << std::endl, -1);
+        return (std::cout << "Error: too large a number" << std::endl, false);
 
-    return(1);
+    return (true);
+}
+
+bool    searchPureDate(std::string key, float value, std::map<std::string, float> btc)
+{
+    key = trim(key);
+    std::map<std::string, float>::iterator it = btc.find(key); 
+    if (it == btc.end())
+        return (false);
+    std::cout << key << " => " << value << " = " << it->second * value << std::endl;
+    return (true);
 }
 
 bool    BitcoinExchange::parseFile(char *str)
@@ -126,19 +149,20 @@ bool    BitcoinExchange::parseFile(char *str)
             return (false);
         while (std::getline(file, line))
         {
-            float bitc = 0;
+            float bitcNum = 0;
             size_t pipe = line.find('|');
             if (pipe == std::string::npos)
                 pipe = line.length() - 1;
             std::string key = line.substr(0, pipe);
             std::string value = line.substr(pipe + 1);
-            if (!validateInput(key))
-                std::cout << "Error: bad input => " << key << std::endl;
-            int validateVal = validateValue(value, &bitc);
-            if (validateVal )
-                std::cout << "Error: bad input => " << key << std::endl;
+            if (!validateInput(key, value))
+                continue ;
+            if (!validateValue(value, &bitcNum))
+                continue ;
+            if (searchPureDate(key, bitcNum, bitcoin))
+                continue ;
             else
-                std::cout << "Done\n";
+                /*searchLowerDate()*/std::cout << "Done\n";
         }
     }
     // std::map<std::string, float>::iterator it = bitcoin.begin();
