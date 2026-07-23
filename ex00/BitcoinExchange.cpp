@@ -129,10 +129,23 @@ bool validateValue(std::string value, float *val)
 bool    searchPureDate(std::string key, float value, std::map<std::string, float> btc)
 {
     key = trim(key);
-    std::map<std::string, float>::iterator it = btc.find(key); 
-    if (it == btc.end())
-        return (false);
-    std::cout << key << " => " << value << " = " << it->second * value << std::endl;
+    std::map<std::string, float>::iterator it = btc.lower_bound(key);  
+
+    if (it != btc.end() && it->first == key)
+        std::cout << key << " => " << value << " = " << it->second * value << std::endl;
+    else
+    {
+        if (it == btc.begin())
+        {
+            std::cout << "Error: no exist or closest value" << std::endl;
+            return (false);
+        }
+        else
+        {
+            it--;
+            std::cout << key << " => " << value << " = " << it->second * value << std::endl;
+        }
+    }
     return (true);
 }
 
@@ -159,10 +172,8 @@ bool    BitcoinExchange::parseFile(char *str)
                 continue ;
             if (!validateValue(value, &bitcNum))
                 continue ;
-            if (searchPureDate(key, bitcNum, bitcoin))
+            if (!searchPureDate(key, bitcNum, bitcoin))
                 continue ;
-            else
-                /*searchLowerDate()*/std::cout << "Done\n";
         }
     }
     // std::map<std::string, float>::iterator it = bitcoin.begin();
