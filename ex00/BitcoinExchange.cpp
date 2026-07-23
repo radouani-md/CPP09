@@ -44,7 +44,7 @@ std::string trim(const std::string& str)
 
 bool    BitcoinExchange::loadFile()
 {
-    std::ifstream file("/home/mradouan/Desktop/CPP09/ex00/cpp_09/data.csv");
+    std::ifstream file("data.csv");
     if (!file)
         return (std::cout << "Error: could not open file." << std::endl, false);
     std::string line ;
